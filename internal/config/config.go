@@ -12,6 +12,7 @@ const (
 )
 
 type Config struct {
+	Reddis  RedisConfig
 	Gin     GinConfig
 	Http    HTTPConfig
 	Limiter LimiterConfig
@@ -19,6 +20,11 @@ type Config struct {
 
 type GinConfig struct {
 	GinMode string
+}
+
+type RedisConfig struct {
+	Addr     string
+	Password string
 }
 
 type HTTPConfig struct {
@@ -62,6 +68,9 @@ func NewConfig() (*Config, error) {
 			Burst: viper.GetInt("LIMITER_BURST"),
 			TTL:   time.Duration(viper.GetInt("LIMITER_TTL")) * time.Second,
 		},
+		Reddis: RedisConfig{
+			Addr:     viper.GetString("REDIS_ADDR"),
+			Password: viper.GetString("REDDIS_PASSWORD"),
+		},
 	}, nil
-
 }

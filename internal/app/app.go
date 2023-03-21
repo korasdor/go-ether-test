@@ -27,7 +27,11 @@ func Run() {
 
 	services := services.NewServices(
 		&services.Deps{
-			Cache: cache.NewRedisCache(),
+			Cache: cache.NewRedisCache(
+				cfg.Reddis.Addr,
+				cfg.Reddis.Password,
+			),
+			// Cache: cache.NewMemoryCache(),
 		},
 	)
 	handlers := routes.NewHandlers(services)
