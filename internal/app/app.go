@@ -10,39 +10,57 @@ import (
 	"time"
 
 	"github.com/korasdor/go-ether-test/internal/config"
+	"github.com/korasdor/go-ether-test/internal/repository"
 	"github.com/korasdor/go-ether-test/internal/routes"
 	"github.com/korasdor/go-ether-test/internal/server"
 	"github.com/korasdor/go-ether-test/internal/services"
 	"github.com/korasdor/go-ether-test/pkg/cache"
+	"github.com/korasdor/go-ether-test/pkg/database/mongodb"
+	"github.com/korasdor/go-ether-test/pkg/hash"
 	"github.com/korasdor/go-ether-test/pkg/logger"
 )
 
 func Run() {
-	logger := logger.NewLogrusLogger()
 
 	cfg, err := config.NewConfig()
 	if err != nil {
-		logger.Errorf("Error occurred while reading env file, might fallback to OS env config %v", err)
+		logger.Error(err)
+		return
 	}
+
+	mongoClient, err := mongodb.NewClient(cfg.Mongo.URI, cfg.Mongo.User, cfg.Mongo.Password)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	db := mongoClient.Database(cfg.Mongo.Name)
+	repos := repository.NewRepositories(db)
+	cache := cache.NewRedisCache(cfg.Reddis.Addr, cfg.Reddis.Password)
+	hasher := hash.NewSHA1Hasher(cfg.Auth.PasswordSalt)
 
 	services := services.NewServices(
 		&services.Deps{
-			Cache: cache.NewRedisCache(
-				cfg.Reddis.Addr,
-				cfg.Reddis.Password,
-			),
+			Repos:  repos,
+			Cache:  cache,
+			Hasher: hasher,
 			// Cache: cache.NewMemoryCache(),
 		},
 	)
 	handlers := routes.NewHandlers(services)
-
 	srv := server.NewServer(cfg, handlers.Init(cfg))
-
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
 			logger.Errorf("error occurred while running http server: %s\n", err.Error())
 		}
 	}()
+
+	// run pprof
+	// go func() {
+	// 	if err := srv.RunPprof(); err != nil {
+	// 		logger.Printf("error occurred while running pprof http server: %s\n", err.Error())
+	// 	}
+	// }()
 
 	logger.Info("Server started")
 

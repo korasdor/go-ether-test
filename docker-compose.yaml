@@ -9,3 +9,17 @@ services:
     volumes:
       - ./configs/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      - MONGODB_DATABASE=go-ether-db
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=qwerty
+    volumes:
+      - db:/data/db
+    ports:
+      - 27017:27017
+volumes: 
+    db:

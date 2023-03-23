@@ -12,14 +12,34 @@ const (
 )
 
 type Config struct {
+	Auth    AuthConfig
 	Reddis  RedisConfig
+	Mongo   MongoConfig
 	Gin     GinConfig
 	Http    HTTPConfig
 	Limiter LimiterConfig
 }
 
+type AuthConfig struct {
+	JWT          JWTConfig
+	PasswordSalt string
+}
+
+type JWTConfig struct {
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
+	SigningKey      string
+}
+
 type GinConfig struct {
 	GinMode string
+}
+
+type MongoConfig struct {
+	URI      string
+	User     string
+	Password string
+	Name     string
 }
 
 type RedisConfig struct {
@@ -53,6 +73,14 @@ func NewConfig() (*Config, error) {
 	viper.AutomaticEnv()
 
 	return &Config{
+		Auth: AuthConfig{
+			PasswordSalt: viper.GetString("PASSWORD_SALT"),
+			JWT: JWTConfig{
+				SigningKey:      viper.GetString("JWT_SIGNING_KEY"),
+				AccessTokenTTL:  time.Duration(viper.GetInt("ACCESS_TOKEN_TTL")) * time.Second,
+				RefreshTokenTTL: time.Duration(viper.GetInt("REFRESH_TOKEN_TTL")) * time.Second,
+			},
+		},
 		Gin: GinConfig{
 			GinMode: viper.GetString("GIN_MODE"),
 		},
@@ -71,6 +99,12 @@ func NewConfig() (*Config, error) {
 		Reddis: RedisConfig{
 			Addr:     viper.GetString("REDIS_ADDR"),
 			Password: viper.GetString("REDDIS_PASSWORD"),
+		},
+		Mongo: MongoConfig{
+			URI:      viper.GetString("MONGODB_URI"),
+			User:     viper.GetString("MONGODB_USERNAME"),
+			Password: viper.GetString("MONGODB_PASSWORD"),
+			Name:     viper.GetString("MONGODB_DATABASE"),
 		},
 	}, nil
 }

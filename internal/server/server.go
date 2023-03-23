@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/korasdor/go-ether-test/internal/config"
 )
@@ -25,6 +26,10 @@ func NewServer(cfg *config.Config, handler http.Handler) *Server {
 
 func (s *Server) Run() error {
 	return s.httpServer.ListenAndServe()
+}
+
+func (s *Server) RunPprof() error {
+	return http.ListenAndServe(":6060", nil)
 }
 
 func (s *Server) Stop(ctx context.Context) error {

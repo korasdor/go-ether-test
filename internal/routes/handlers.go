@@ -37,7 +37,7 @@ func (h *Handlers) Init(cfg *config.Config) *gin.Engine {
 
 	api := router.Group("v1/api")
 	{
-		user := api.Group("user")
+		user := api.Group("users")
 		{
 			auth := user.Group("auth")
 			{
