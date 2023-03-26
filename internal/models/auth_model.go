@@ -13,7 +13,6 @@ type SignInData struct {
 }
 
 type Tokens struct {
-	AccessToken  string
-	RefreshToken string
-	BindingToken string
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"-"`
 }

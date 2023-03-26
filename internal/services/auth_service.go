@@ -2,27 +2,41 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/korasdor/go-ether-test/internal/models"
 	"github.com/korasdor/go-ether-test/internal/repository"
+	"github.com/korasdor/go-ether-test/pkg/auth"
 	"github.com/korasdor/go-ether-test/pkg/hash"
 )
 
 type AuthorizationService struct {
-	repo   *repository.Repositories
-	hasher hash.PasswordHasher
+	repo            *repository.Repositories
+	hasher          hash.PasswordHasher
+	tokenManager    auth.TokenManager
+	accessTokenTTL  time.Duration
+	refreshTokenTTL time.Duration
 }
 
-func NewAuthorizationService(repo *repository.Repositories, hasher hash.PasswordHasher) *AuthorizationService {
+func NewAuthorizationService(
+	repo *repository.Repositories,
+	hasher hash.PasswordHasher,
+	tokenManager auth.TokenManager,
+	accessTokenTTL time.Duration,
+	refeshTokenTTL time.Duration,
+) *AuthorizationService {
+
 	return &AuthorizationService{
-		repo:   repo,
-		hasher: hasher,
+		repo:            repo,
+		hasher:          hasher,
+		tokenManager:    tokenManager,
+		accessTokenTTL:  accessTokenTTL,
+		refreshTokenTTL: refeshTokenTTL,
 	}
 }
 
-func (s *AuthorizationService) SingUp(ctx context.Context, signUpData models.SignUpData) error {
+func (s *AuthorizationService) SignUp(ctx context.Context, signUpData models.SignUpData) error {
 	passwordHash, err := s.hasher.Hash(signUpData.Password)
 	if err != nil {
 		return err
@@ -40,8 +54,8 @@ func (s *AuthorizationService) SingUp(ctx context.Context, signUpData models.Sig
 	return s.repo.UsersRepo.Create(ctx, userData)
 }
 
-func (s *AuthorizationService) SingIn(ctx context.Context, signInData models.SignInData) (models.Tokens, error) {
-	token := models.Tokens{}
+func (s *AuthorizationService) SignIn(ctx context.Context, signInData models.SignInData, tokenBinding *auth.TokenBinding) (models.Tokens, error) {
+	var token models.Tokens
 
 	passwordHash, err := s.hasher.Hash(signInData.Password)
 	if err != nil {
@@ -54,11 +68,51 @@ func (s *AuthorizationService) SingIn(ctx context.Context, signInData models.Sig
 		return token, err
 	}
 
-	fmt.Println(user)
+	token, err = s.generateTokens(user.ID.Hex(), tokenBinding)
+	if err != nil {
+		return token, err
+	}
 
 	return token, nil
 }
 
-func (s *AuthorizationService) RefreshTokens() (models.Tokens, error) {
-	return models.Tokens{}, nil
+func (s *AuthorizationService) RefreshTokens(refreshToken string, tokenBinding *auth.TokenBinding) (models.Tokens, error) {
+	var token models.Tokens
+
+	tokenData, err := s.tokenManager.ParseJWT(refreshToken)
+	if err != nil {
+		return token, err
+	}
+
+	if tokenBinding.IPAddr != tokenData.TokenBinding.IPAddr || tokenBinding.UserAgent != tokenData.TokenBinding.UserAgent {
+		return token, errors.New("token binding not the same, the difference is in the IP address and user agent")
+	}
+
+	token, err = s.generateTokens(tokenData.UserId, tokenData.TokenBinding)
+	if err != nil {
+		return token, err
+	}
+
+	return token, nil
+}
+
+func (s *AuthorizationService) generateTokens(userId string, tokenBinding *auth.TokenBinding) (models.Tokens, error) {
+	var token models.Tokens
+
+	accessToken, err := s.tokenManager.NewJWT(userId, tokenBinding, s.accessTokenTTL)
+	if err != nil {
+		return token, err
+	}
+
+	refreshToken, err := s.tokenManager.NewJWT(userId, tokenBinding, s.refreshTokenTTL)
+	if err != nil {
+		return token, err
+	}
+
+	token = models.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	return token, nil
 }

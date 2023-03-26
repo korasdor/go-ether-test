@@ -11,11 +11,13 @@ import (
 
 type Handlers struct {
 	services *services.Services
+	config   *config.Config
 }
 
-func NewHandlers(services *services.Services) *Handlers {
+func NewHandlers(services *services.Services, config *config.Config) *Handlers {
 	return &Handlers{
 		services: services,
+		config:   config,
 	}
 }
 

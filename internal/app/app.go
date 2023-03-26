@@ -14,6 +14,7 @@ import (
 	"github.com/korasdor/go-ether-test/internal/routes"
 	"github.com/korasdor/go-ether-test/internal/server"
 	"github.com/korasdor/go-ether-test/internal/services"
+	"github.com/korasdor/go-ether-test/pkg/auth"
 	"github.com/korasdor/go-ether-test/pkg/cache"
 	"github.com/korasdor/go-ether-test/pkg/database/mongodb"
 	"github.com/korasdor/go-ether-test/pkg/hash"
@@ -39,15 +40,25 @@ func Run() {
 	cache := cache.NewRedisCache(cfg.Reddis.Addr, cfg.Reddis.Password)
 	hasher := hash.NewSHA1Hasher(cfg.Auth.PasswordSalt)
 
+	tokenManager, err := auth.NewManager(cfg.Auth.JWT.SigningKey)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
 	services := services.NewServices(
 		&services.Deps{
 			Repos:  repos,
 			Cache:  cache,
 			Hasher: hasher,
 			// Cache: cache.NewMemoryCache(),
+
+			TokenManager:    tokenManager,
+			AccessTokenTTL:  cfg.Auth.JWT.AccessTokenTTL,
+			RefreshTokenTTL: cfg.Auth.JWT.RefreshTokenTTL,
 		},
 	)
-	handlers := routes.NewHandlers(services)
+	handlers := routes.NewHandlers(services, cfg)
 	srv := server.NewServer(cfg, handlers.Init(cfg))
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
