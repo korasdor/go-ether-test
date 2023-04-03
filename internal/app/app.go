@@ -58,8 +58,8 @@ func Run() {
 			RefreshTokenTTL: cfg.Auth.JWT.RefreshTokenTTL,
 		},
 	)
-	handlers := routes.NewHandlers(services, cfg)
-	srv := server.NewServer(cfg, handlers.Init(cfg))
+	handlers := routes.NewHandler(services, cfg, tokenManager)
+	srv := server.NewServer(cfg, handlers.Init())
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
 			logger.Errorf("error occurred while running http server: %s\n", err.Error())

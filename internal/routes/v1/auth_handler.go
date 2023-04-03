@@ -1,4 +1,4 @@
-package routes
+package v1
 
 import (
 	"net/http"
@@ -8,7 +8,16 @@ import (
 	"github.com/korasdor/go-ether-test/pkg/auth"
 )
 
-func (h *Handlers) userSignUp(ctx *gin.Context) {
+func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
+	auth := api.Group("auth")
+	{
+		auth.POST("user/sign-up", h.userSignUp)
+		auth.POST("user/sign-in", h.userSignIn)
+		auth.POST("user/refresh", h.userRefreshToken)
+	}
+}
+
+func (h *Handler) userSignUp(ctx *gin.Context) {
 	var signUpData models.SignUpData
 
 	if err := ctx.BindJSON(&signUpData); err != nil {
@@ -27,7 +36,7 @@ func (h *Handlers) userSignUp(ctx *gin.Context) {
 	})
 }
 
-func (h *Handlers) userSignIn(ctx *gin.Context) {
+func (h *Handler) userSignIn(ctx *gin.Context) {
 	var signInData models.SignInData
 
 	if err := ctx.BindJSON(&signInData); err != nil {
@@ -60,7 +69,7 @@ func (h *Handlers) userSignIn(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, token)
 }
 
-func (h *Handlers) userRefreshToken(ctx *gin.Context) {
+func (h *Handler) userRefreshToken(ctx *gin.Context) {
 	tokenBinding := &auth.TokenBinding{}
 	tokenBinding, err := tokenBinding.Parse(ctx.Request)
 	if err != nil {

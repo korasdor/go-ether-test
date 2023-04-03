@@ -17,8 +17,15 @@ type Authorization interface {
 	RefreshTokens(refreshToken string, tokenBinding *auth.TokenBinding) (models.Tokens, error)
 }
 
+type Users interface {
+	GetUser(ctx context.Context, userId string) (models.UserData, error)
+	// UpdateUser(ctx context.Context, userId string) (models.UserData, error)
+	DeleteUser(ctx context.Context, userId string) error
+}
+
 type Services struct {
 	AuthorizationService Authorization
+	UsersService         Users
 }
 
 type Deps struct {
@@ -33,5 +40,6 @@ type Deps struct {
 func NewServices(deps *Deps) *Services {
 	return &Services{
 		AuthorizationService: NewAuthorizationService(deps.Repos, deps.Hasher, deps.TokenManager, deps.AccessTokenTTL, deps.RefreshTokenTTL),
+		UsersService:         NewUsersService(deps.Repos),
 	}
 }
