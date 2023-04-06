@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	infuraUrl  = "https://mainnet.infura.io/v3/17ec44fd8ad4457cafb926b75e360484"
+	// infuraUrl  = "https://mainnet.infura.io/v3/17ec44fd8ad4457cafb926b75e360484"
 	alchemyUrl = "https://eth-mainnet.g.alchemy.com/v2/aeyWf4ZgLuvyQKE7ac1rewRSi4CZVPt4"
 )
 

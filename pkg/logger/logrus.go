@@ -2,61 +2,66 @@ package logger
 
 import "github.com/sirupsen/logrus"
 
-type LogrusLogger struct {
+func Print(msg ...interface{}) {
+	logrus.Print(msg...)
+
+	go writeToFile()
 }
 
-func NewLogrusLogger() *LogrusLogger {
-	return &LogrusLogger{}
+func Printf(format string, args ...interface{}) {
+	logrus.Printf(format, args...)
+
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Info(msg ...interface{}) {
+func Info(msg ...interface{}) {
 	logrus.Info(msg...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Infof(format string, args ...interface{}) {
+func Infof(format string, args ...interface{}) {
 	logrus.Infof(format, args...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Warn(msg ...interface{}) {
+func Warn(msg ...interface{}) {
 	logrus.Warn(msg...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...interface{}) {
 	logrus.Warnf(format, args...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Error(msg ...interface{}) {
+func Error(msg ...interface{}) {
 	logrus.Error(msg...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...interface{}) {
 	logrus.Errorf(format, args...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Fatal(msg ...interface{}) {
+func Fatal(msg ...interface{}) {
 	logrus.Fatal(msg...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...interface{}) {
 	logrus.Fatalf(format, args...)
 
-	go l.writeToFile()
+	go writeToFile()
 }
 
-func (l *LogrusLogger) writeToFile() {
+func writeToFile() {
 	// TODO write to file feature
 }
