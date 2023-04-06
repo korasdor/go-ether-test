@@ -8,6 +8,8 @@ build:
 run: build
 	docker-compose up --remove-orphans app
 
+lint:
+	golangci-lint run --config .golangci.yml
+
 test:
-	go test --short -coverprofile=cover.out -v ./...
-	make test.coverage
+	go test ./... -coverprofile coverage.out

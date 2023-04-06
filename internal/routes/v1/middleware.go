@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/korasdor/go-ether-test/pkg/auth"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -56,25 +55,25 @@ func (h *Handler) parseAuthHeader(ctx *gin.Context) (*auth.TokenData, error) {
 	return h.tokenManager.ParseJWT(headerParts[1])
 }
 
-func getUserId(c *gin.Context) (primitive.ObjectID, error) {
-	return getIdByContext(c, userCtx)
-}
+// func getUserId(c *gin.Context) (primitive.ObjectID, error) {
+// 	return getIdByContext(c, userCtx)
+// }
 
-func getIdByContext(c *gin.Context, context string) (primitive.ObjectID, error) {
-	idFromCtx, ok := c.Get(context)
-	if !ok {
-		return primitive.ObjectID{}, errors.New("studentCtx not found")
-	}
+// func getIdByContext(c *gin.Context, context string) (primitive.ObjectID, error) {
+// 	idFromCtx, ok := c.Get(context)
+// 	if !ok {
+// 		return primitive.ObjectID{}, errors.New("studentCtx not found")
+// 	}
 
-	idStr, ok := idFromCtx.(string)
-	if !ok {
-		return primitive.ObjectID{}, errors.New("studentCtx is of invalid type")
-	}
+// 	idStr, ok := idFromCtx.(string)
+// 	if !ok {
+// 		return primitive.ObjectID{}, errors.New("studentCtx is of invalid type")
+// 	}
 
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		return primitive.ObjectID{}, err
-	}
+// 	id, err := primitive.ObjectIDFromHex(idStr)
+// 	if err != nil {
+// 		return primitive.ObjectID{}, err
+// 	}
 
-	return id, nil
-}
+// 	return id, nil
+// }
