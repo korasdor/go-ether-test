@@ -17,8 +17,14 @@ func (h *Handler) initUsersRoutes(api *gin.RouterGroup) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
+	userId, err := getUserId(ctx)
+	if err != nil {
+		newResponse(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "good",
+		"message": userId.Hex(),
 	})
 }
 
