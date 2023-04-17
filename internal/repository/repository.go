@@ -4,13 +4,15 @@ import (
 	"context"
 
 	"github.com/korasdor/go-ether-test/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Users interface {
 	Create(ctx context.Context, userData models.UserData) error
 	GetByCredentials(ctx context.Context, sidnInData models.SignInData) (models.UserData, error)
-	GetById(ctx context.Context, sidnInData models.SignInData) (models.UserData, error)
+	GetById(ctx context.Context, userId primitive.ObjectID) (models.UserData, error)
+	UpdateUser(ctx context.Context, user models.UserData) (models.UserData, error)
 }
 
 type Repositories struct {

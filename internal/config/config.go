@@ -12,12 +12,13 @@ const (
 )
 
 type Config struct {
-	Auth    AuthConfig
-	Reddis  RedisConfig
-	Mongo   MongoConfig
-	Gin     GinConfig
-	Http    HTTPConfig
-	Limiter LimiterConfig
+	Auth       *AuthConfig
+	Reddis     *RedisConfig
+	Mongo      *MongoConfig
+	Gin        *GinConfig
+	Http       *HTTPConfig
+	Limiter    *LimiterConfig
+	Blockchain *BlockchainConfig
 }
 
 type AuthConfig struct {
@@ -61,6 +62,10 @@ type LimiterConfig struct {
 	TTL   time.Duration
 }
 
+type BlockchainConfig struct {
+	AlchemyUrl string
+}
+
 func NewConfig() (*Config, error) {
 	viper.SetConfigType(defaultConfigType)
 	viper.SetConfigFile(defaultConfigPath)
@@ -73,7 +78,7 @@ func NewConfig() (*Config, error) {
 	viper.AutomaticEnv()
 
 	return &Config{
-		Auth: AuthConfig{
+		Auth: &AuthConfig{
 			PasswordSalt: viper.GetString("PASSWORD_SALT"),
 			JWT: JWTConfig{
 				SigningKey:      viper.GetString("JWT_SIGNING_KEY"),
@@ -81,30 +86,33 @@ func NewConfig() (*Config, error) {
 				RefreshTokenTTL: time.Duration(viper.GetInt("REFRESH_TOKEN_TTL")) * time.Second,
 			},
 		},
-		Gin: GinConfig{
+		Gin: &GinConfig{
 			GinMode: viper.GetString("GIN_MODE"),
 		},
-		Http: HTTPConfig{
+		Http: &HTTPConfig{
 			Host:               "",
 			Port:               viper.GetString("HTTP_PORT"),
 			ReadTimeout:        time.Duration(viper.GetInt("HTTP_READ_TIMEOUT")) * time.Second,
 			WriteTimeout:       time.Duration(viper.GetInt("HTTP_WRITE_TIMEOUT")) * time.Second,
 			MaxHeaderMegabytes: viper.GetInt("HTTP_MAX_HEADER_MEGABYTES"),
 		},
-		Limiter: LimiterConfig{
+		Limiter: &LimiterConfig{
 			RPS:   viper.GetInt("LIMITER_RPS"),
 			Burst: viper.GetInt("LIMITER_BURST"),
 			TTL:   time.Duration(viper.GetInt("LIMITER_TTL")) * time.Second,
 		},
-		Reddis: RedisConfig{
+		Reddis: &RedisConfig{
 			Addr:     viper.GetString("REDIS_ADDR"),
 			Password: viper.GetString("REDDIS_PASSWORD"),
 		},
-		Mongo: MongoConfig{
+		Mongo: &MongoConfig{
 			URI:      viper.GetString("MONGODB_URI"),
 			User:     viper.GetString("MONGODB_USERNAME"),
 			Password: viper.GetString("MONGODB_PASSWORD"),
 			Name:     viper.GetString("MONGODB_DATABASE"),
+		},
+		Blockchain: &BlockchainConfig{
+			AlchemyUrl: viper.GetString("ALCHEMY_URL"),
 		},
 	}, nil
 }

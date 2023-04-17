@@ -63,12 +63,12 @@ func getUserId(c *gin.Context) (primitive.ObjectID, error) {
 func getIdByContext(c *gin.Context, context string) (primitive.ObjectID, error) {
 	idFromCtx, ok := c.Get(context)
 	if !ok {
-		return primitive.ObjectID{}, errors.New("studentCtx not found")
+		return primitive.ObjectID{}, errors.New("userCtx not found")
 	}
 
 	idStr, ok := idFromCtx.(string)
 	if !ok {
-		return primitive.ObjectID{}, errors.New("studentCtx is of invalid type")
+		return primitive.ObjectID{}, errors.New("userCtx is of invalid type")
 	}
 
 	id, err := primitive.ObjectIDFromHex(idStr)

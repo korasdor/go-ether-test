@@ -15,6 +15,7 @@ import (
 	"github.com/korasdor/go-ether-test/internal/server"
 	"github.com/korasdor/go-ether-test/internal/services"
 	"github.com/korasdor/go-ether-test/pkg/auth"
+	"github.com/korasdor/go-ether-test/pkg/blockchain"
 	"github.com/korasdor/go-ether-test/pkg/cache"
 	"github.com/korasdor/go-ether-test/pkg/database/mongodb"
 	"github.com/korasdor/go-ether-test/pkg/hash"
@@ -46,6 +47,12 @@ func Run() {
 		return
 	}
 
+	blockchainManager, err := blockchain.NewManager(cfg.Blockchain.AlchemyUrl)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
 	services := services.NewServices(
 		&services.Deps{
 			Repos:  repos,
@@ -53,9 +60,10 @@ func Run() {
 			Hasher: hasher,
 			// Cache: cache.NewMemoryCache(),
 
-			TokenManager:    tokenManager,
-			AccessTokenTTL:  cfg.Auth.JWT.AccessTokenTTL,
-			RefreshTokenTTL: cfg.Auth.JWT.RefreshTokenTTL,
+			BlockchainManager: blockchainManager,
+			TokenManager:      tokenManager,
+			AccessTokenTTL:    cfg.Auth.JWT.AccessTokenTTL,
+			RefreshTokenTTL:   cfg.Auth.JWT.RefreshTokenTTL,
 		},
 	)
 	handlers := routes.NewHandler(services, cfg, tokenManager)
@@ -84,6 +92,7 @@ func Run() {
 	ctx, shutdown := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdown()
 
+	blockchainManager.Stop()
 	if err := srv.Stop(ctx); err != nil {
 		logger.Errorf("failed to stop server: %v", err)
 	}
